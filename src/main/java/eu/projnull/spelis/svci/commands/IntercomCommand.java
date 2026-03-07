@@ -1,48 +1,37 @@
 package eu.projnull.spelis.svci.commands;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import eu.projnull.spelis.svci.commands.handlers.*;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-public class IntercomCommand implements CommandExecutor {
-
-    private final Map<String, BroadcastTypeHandler> handlers = new HashMap<>();
+public class IntercomCommand {
+    private final List<Handler> handlers = new ArrayList<>();
 
     public IntercomCommand() {
-        registerHandler(new eu.projnull.spelis.svci.commands.handlers.LiveBroadcastHandler());
-        registerHandler(new eu.projnull.spelis.svci.commands.handlers.StopBroadcastHandler());
-        registerHandler(new eu.projnull.spelis.svci.commands.handlers.InfoBroadcastHandler());
-        registerHandler(new eu.projnull.spelis.svci.commands.handlers.FileBroadcastHandler());
+        registerHandler(new InfoCommand());
+        registerHandler(new StopCommand());
+        registerHandler(new LiveCommand());
+        registerHandler(new FileCommand());
+        registerHandler(new AboutCommand());
     }
 
-    public void registerHandler(BroadcastTypeHandler handler) {
-        handlers.put(handler.getName().toLowerCase(), handler);
+    public void registerHandler(Handler handler) {
+        handlers.add(handler);
     }
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public void register(ReloadableRegistrarEvent<@NotNull Commands> commands) {
+        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("intercom").requires(cs->cs.getSender().hasPermission("svcintercom.broadcast"));
 
-        if (!sender.hasPermission("svcintercom.broadcast")) {
-            sender.sendMessage("§cYou don't have permission to use the intercom.");
-            return true;
+        for (Handler handler : handlers) {
+            root.then(handler.buildCommand());
         }
 
-        if (args.length < 1) {
-            sender.sendMessage("§cUsage: /intercom <type> ...");
-            return true;
-        }
-
-        String type = args[0].toLowerCase();
-        BroadcastTypeHandler handler = handlers.get(type);
-
-        if (handler == null) {
-            sender.sendMessage("§cUnknown broadcast type: " + type);
-            return true;
-        }
-
-        return handler.execute(sender, args);
+        commands.registrar().register(root.build());
     }
 }

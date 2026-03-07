@@ -4,10 +4,10 @@ import de.maxhenkel.voicechat.api.BukkitVoicechatService;
 import eu.projnull.spelis.svci.commands.IntercomCommand;
 import eu.projnull.spelis.svci.misc.BroadcastHudTask;
 import eu.projnull.spelis.svci.voice.VoicePlugin;
-import org.bukkit.plugin.java.JavaPlugin;
-
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nullable;
 
@@ -32,7 +32,7 @@ public final class Intercom extends JavaPlugin {
             LOGGER.info("Failed to register intercom plugin");
         }
 
-        getCommand("intercom").setExecutor(new IntercomCommand());
+        this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> new IntercomCommand().register(commands));
 
         hudTask.start(this);
     }

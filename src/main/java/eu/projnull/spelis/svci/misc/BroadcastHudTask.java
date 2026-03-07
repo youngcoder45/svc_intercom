@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public final class BroadcastHudTask {
@@ -46,8 +45,8 @@ public final class BroadcastHudTask {
 
     private Component buildMessage(Broadcaster broadcaster) {
         long remaining = broadcaster.getEndTimeMillis() - System.currentTimeMillis();
-        long minutes   = TimeUnit.MILLISECONDS.toMinutes(remaining);
-        long seconds   = TimeUnit.MILLISECONDS.toSeconds(remaining) % 60;
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(remaining);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(remaining) % 60;
 
         String timer = String.format("%d:%02d remaining", minutes, seconds);
 

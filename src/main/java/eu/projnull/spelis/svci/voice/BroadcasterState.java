@@ -4,9 +4,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import java.util.UUID;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 public final class BroadcasterState {
 
@@ -15,17 +17,18 @@ public final class BroadcasterState {
     // Key = worldId
     private final Map<UUID, Broadcaster> broadcasts = new ConcurrentHashMap<>();
 
-    private BroadcasterState() {}
+    private BroadcasterState() {
+    }
 
     public static BroadcasterState inst() {
         return INSTANCE;
     }
 
-    public boolean startBroadcast(Broadcaster broadcaster) {
+    public void startBroadcast(Broadcaster broadcaster) {
         UUID worldId = broadcaster.getWorldId();
 
         // only allow one broadcast per world
-        return broadcasts.putIfAbsent(worldId, broadcaster) == null;
+        broadcasts.putIfAbsent(worldId, broadcaster);
     }
 
     public Broadcaster getBroadcast(UUID worldId) {
@@ -39,6 +42,16 @@ public final class BroadcasterState {
         }
 
         return b;
+    }
+
+    public Stream<String> activeBroadcastWorldNames() {
+        long now = System.currentTimeMillis();
+
+        return broadcasts.values().stream()
+                .filter(b -> b.getEndTimeMillis() > now)
+                .map(b -> Bukkit.getWorld(b.getWorldId()))
+                .filter(Objects::nonNull)
+                .map(World::getName);
     }
 
     public void stopBroadcastWithMessage(UUID worldId, String message) {

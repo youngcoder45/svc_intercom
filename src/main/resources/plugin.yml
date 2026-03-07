@@ -1,5 +1,5 @@
 name: svc_intercom
-version: '1.0'
+version: '1.1'
 main: eu.projnull.spelis.svci.Intercom
 api-version: '1.21'
 prefix: SVCIntercom
@@ -13,6 +13,19 @@ depend: [ voicechat ]
 commands:
   intercom:
     description: Manage intercom broadcasts
-    usage: /intercom <file|live|stop> ...
+    usage: /intercom <file|live|stop|info|about> ...
     permission: svcintercom.broadcast
     permission-message: You do not have permission to use the intercom.
+
+permissions:
+    svcintercom.broadcast:
+      description: Allows use of /intercom commands
+      default: true
+    svcintercom.broadcast.start:
+      description: Allows player to start a file or live broadcast
+      default: op
+    svcintercom.broadcast.stop:
+      description: Allows player to end a broadcast
+      default: op
+    svcintercom.broadcast.info:
+      description: Shows information about the current broadcast
