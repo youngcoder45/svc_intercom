@@ -44,6 +44,7 @@ dependencies {
     implementation("com.googlecode.soundlibs:vorbisspi:1.0.3.3")
     implementation("com.googlecode.soundlibs:tritonus-share:0.3.7.4")
     implementation("com.google.code.findbugs:jsr305:3.0.2")
+    implementation("com.google.code.gson:gson:2.10.1")
 }
 
 tasks.processResources {

@@ -83,18 +83,46 @@ public class FileCommand implements Handler {
                     BroadcasterState.Broadcaster broadcaster = new BroadcasterState.Broadcaster(null, world.getUID(), BroadcasterState.Broadcaster.BroadcastType.FILE, durationMillis, filename);
                     BroadcasterState.inst().startBroadcast(broadcaster);
 
-                    for (Player p : world.getPlayers()) {
-                        VoicechatConnection connection = api.getConnectionOf(p.getUniqueId());
-                        if (connection == null) continue;
+                    // Get all speakers in this world
+                    java.util.List<eu.projnull.spelis.svci.voice.Speaker> speakers = eu.projnull.spelis.svci.voice.SpeakerManager.inst().getSpeakers(world.getUID());
+                    
+                    if (speakers.isEmpty()) {
+                        // Fallback to old behavior if no speakers are defined
+                        for (Player p : world.getPlayers()) {
+                            VoicechatConnection connection = api.getConnectionOf(p.getUniqueId());
+                            if (connection == null) continue;
 
-                        StaticAudioChannel channel = api.createStaticAudioChannel(UUID.randomUUID(), level, connection);
-                        if (channel == null) continue;
+                            StaticAudioChannel channel = api.createStaticAudioChannel(UUID.randomUUID(), level, connection);
+                            if (channel == null) continue;
 
-                        AudioPlayer audioPlayer = api.createAudioPlayer(channel, api.createEncoder(), pcm);
-                        audioPlayer.startPlaying();
+                            AudioPlayer audioPlayer = api.createAudioPlayer(channel, api.createEncoder(), pcm);
+                            audioPlayer.startPlaying();
+                        }
+                        sender.sendMessage("§aFile broadcast started: §f" + filename + " §ain §f" + world.getName() + " §7(no speakers, using global audio)");
+                    } else {
+                        // Use positional audio from speakers
+                        for (eu.projnull.spelis.svci.voice.Speaker speaker : speakers) {
+                            org.bukkit.Location speakerLoc = speaker.getLocation();
+                            if (speakerLoc == null) continue;
+
+                            de.maxhenkel.voicechat.api.Position position = api.createPosition(
+                                    speakerLoc.getX(),
+                                    speakerLoc.getY(),
+                                    speakerLoc.getZ()
+                            );
+
+                            de.maxhenkel.voicechat.api.audiochannel.LocationalAudioChannel channel = 
+                                    api.createLocationalAudioChannel(UUID.randomUUID(), level, position);
+                            
+                            if (channel == null) continue;
+
+                            channel.setDistance((float) speaker.getRange());
+
+                            AudioPlayer audioPlayer = api.createAudioPlayer(channel, api.createEncoder(), pcm);
+                            audioPlayer.startPlaying();
+                        }
+                        sender.sendMessage("§aFile broadcast started: §f" + filename + " §ain §f" + world.getName() + " §7(" + speakers.size() + " speakers)");
                     }
-
-                    sender.sendMessage("§aFile broadcast started: §f" + filename + " §ain §f" + world.getName());
 
                     Bukkit.getScheduler().runTaskLaterAsynchronously(Intercom.getPlugin(Intercom.class), () -> BroadcasterState.inst().stopBroadcastWithMessage(world.getUID(), "§aThe broadcast has ended."), durationMillis / 50L);
                 });

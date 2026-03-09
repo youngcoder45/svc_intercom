@@ -3,6 +3,7 @@ package eu.projnull.spelis.svci;
 import de.maxhenkel.voicechat.api.BukkitVoicechatService;
 import eu.projnull.spelis.svci.commands.IntercomCommand;
 import eu.projnull.spelis.svci.misc.BroadcastHudTask;
+import eu.projnull.spelis.svci.voice.SpeakerManager;
 import eu.projnull.spelis.svci.voice.VoicePlugin;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.apache.logging.log4j.LogManager;
@@ -23,6 +24,9 @@ public final class Intercom extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // Initialize speaker system
+        SpeakerManager.inst().initialize(this.getDataFolder());
+        
         BukkitVoicechatService service = getServer().getServicesManager().load(BukkitVoicechatService.class);
         if (service != null) {
             voicechatPlugin = new VoicePlugin();

@@ -19,6 +19,7 @@ public class IntercomCommand {
         registerHandler(new LiveCommand());
         registerHandler(new FileCommand());
         registerHandler(new AboutCommand());
+        registerHandler(new SpeakerCommand());
     }
 
     public void registerHandler(Handler handler) {
